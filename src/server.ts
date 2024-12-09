@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import api from './utils/api';
 import { estimatedAge } from './utils/functions';
 import { requestLogger, errorLogger } from './middlewares/logger';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -17,11 +18,43 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(requestLogger);
 
-app.post(
+app.get('/amo-crm', async (req: Request, res: Response, next: NextFunction) => {
+    console.log('req', req.query);
+
+    console.log('------------------------------------------------');
+
+    const answer = await axios({
+        method: 'post',
+        url: 'https://moma2108.amocrm.ru/oauth2/access_token',
+        data: {
+            client_id: req.query.client_id,
+            client_secret:
+                'H2zSopux81CjJy9YMv0mJt9e1zHlXRzk83pXvK2gwIefPRbRbMTUZkkRgJyUxXuA',
+            grant_type: 'authorization_code',
+            code: req.query.code,
+            redirect_uri: 'https://c540-77-95-90-50.ngrok-free.app/amo-crm',
+        },
+    });
+
+    /* api.getAccessAndRefreshTokens({
+        client_id: req.query.client_id,
+        client_secret:
+            'H2zSopux81CjJy9YMv0mJt9e1zHlXRzk83pXvK2gwIefPRbRbMTUZkkRgJyUxXuA',
+        grant_type: 'authorization_code',
+        code: req.query.code,
+        redirect_uri: 'https://c540-77-95-90-50.ngrok-free.app/amo-crm',
+    }); */
+
+    console.log('answer', answer);
+});
+
+/* app.post(
     '/amo-crm',
     async (req: Request, res: Response, next: NextFunction) => {
-        const contact = req.body.contacts.add[0];
-        const contactFields = await api.getContactFields();
+        //const contact = req.body.contacts.add[0];
+        console.log(req); */
+
+/*         const contactFields = await api.getContactFields();
 
         const ageField = contactFields._embedded.custom_fields.filter((el) => {
             return el.name === 'Возраст' && el.entity_type === 'contacts';
@@ -40,9 +73,9 @@ app.post(
                     values: [{ value: ageValue }],
                 },
             ],
-        });
-    }
-);
+        }); */
+/*     }
+); */
 
 app.use(errorLogger);
 

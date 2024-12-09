@@ -1,18 +1,22 @@
 class Api {
     baseUrl: string;
+    tokenUrl: string;
     headers: { Authorization: string };
 
     constructor(options: {
         baseUrl: string;
+        tokenUrl: string;
         headers: { Authorization: string };
     }) {
         this.baseUrl = options.baseUrl;
+        this.tokenUrl = options.tokenUrl;
         this.headers = options.headers;
     }
 
-    async _makeRequest(url: string, options = {}) {
+    async _makeRequest(url: string, options = {}, token = false) {
+        console.log((token ? url : this.baseUrl + url))
         try {
-            const response = await fetch(this.baseUrl + url, options);
+            const response = await fetch((token ? this.tokenUrl : this.baseUrl + url), options);
             return this._parseResponse(response);
         } catch (err) {
             throw new Error(`Ошибка запроса к серверу: ${err.message}`);
@@ -53,10 +57,22 @@ class Api {
             headers: this.headers,
         });
     }
+
+    getAccessAndRefreshTokens(body: any) {
+        return this._makeRequest('https://moma2108.amocrm.ru/oauth2/access_token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+            ,
+        }, true);
+    }
 }
 
 const api = new Api({
     baseUrl: 'https://moma2108.amocrm.ru/api/v4',
+    tokenUrl: 'https://moma2108.amocrm.ru',
 
     headers: {
         Authorization:
